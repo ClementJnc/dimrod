@@ -1,4 +1,4 @@
-import ../dimrod
+import dimrod
 
 const 
     config_unit : TBasicUnitsConf = (@["m", "kg", "s"],@[(-1,2), (-1,1), (-2,2)])

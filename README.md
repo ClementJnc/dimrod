@@ -66,3 +66,5 @@ TODO
 * Cut code into smaller chunks (+ factoring for + - and * /)
 * Use arrays instead of sequences ?
 
+
+Example program can be launch with `nimrod c -r example/test_dimrod.nim`
