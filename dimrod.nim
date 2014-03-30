@@ -72,10 +72,6 @@ proc `==` (a, b: TComposition) : bool =
 
 # Initialilisation of the librairy
 macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameConfig], aliases_config:static[TAliasConf]) : stmt =   # TODO add default value for alias
-    type
-        TAlias = tuple
-            name: string
-            compo: TComposition
     var
        #conf_names:seq[string] = @[]
        #conf_limits:seq[TExpLimits] = @[]
