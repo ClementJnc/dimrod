@@ -106,6 +106,7 @@ macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameCon
     # Init state, all exponent values to the minimum
 
     for i in 0..conf_length-1:
+        echo i
         compo.add(config[i].limits.expmin)
     compos.add(compo)
     idx = conf_length-1
