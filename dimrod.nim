@@ -40,7 +40,7 @@ proc `$` (c: TComposition): string =
         result &= $c[i] & " "
 
 # Create the name of a type give a composition and some config
-proc get_uname(compo: TComposition, names: seq[string], uname_config: TUnameConfig) : string {.compileTime.} =
+proc get_uname(compo: TComposition, config: TBasicUnitsConf, uname_config: TUnameConfig) : string {.compileTime.} =
     var
         n:int
         first_char: bool = true # used to prevent an underscore as first char if first unit is absent.
@@ -52,7 +52,7 @@ proc get_uname(compo: TComposition, names: seq[string], uname_config: TUnameConf
             continue
         if n > 0 and not first_char:
             result &= "_"
-        result &= names[n]
+        result &= config[n].name
         first_char = false
         # Add separator if exponent is negative
         # Nothing to display if exponent is 1
@@ -71,55 +71,53 @@ proc `==` (a, b: TComposition) : bool =
     return true
 
 # Initialilisation of the librairy
-macro init_unit*(config_ast: TBasicUnitsConf, uname_config_ast: TUnameConfig, alias_config_ast:TAliasConf) : stmt =   # TODO add default value for alias
+macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameConfig], alias_config:static[TAliasConf]) : stmt =   # TODO add default value for alias
     type
         TAlias = tuple
             name: string
             compo: TComposition
     var
-        conf_names:seq[string] = @[]
-        conf_limits:seq[TExpLimits] = @[]
-        compos: seq[TComposition] = @[]
-        unames: seq[string] = @[]
-        compo: TComposition = @[]
-        idx: int
-        conf_length: int
+       #conf_names:seq[string] = @[]
+       #conf_limits:seq[TExpLimits] = @[]
+       #compos: seq[TComposition] = @[]
+       unames: seq[string] = @[]
+       compo: TComposition = @[]
+       idx: int
+       #conf_length: int
 
-        uname_config: TUnameConfig
-        aliases_config:seq[TAlias] = @[]
-        aliases_length:int
+       #uname_config: TUnameConfig
+       #aliases_config:seq[TAlias] = @[]
+       #aliases_length:int
     result = newNimNode(nnkStmtList)
 
-    conf_length = config_ast[0][1].len
+    #conf_length = config_ast[0][1].len
 
-    for i in 0..conf_length-1:
-        conf_names.add(config_ast[0][1][i].StrVal)
+    #for i in 0..conf_length-1:
+    #    conf_names.add(config_ast[0][1][i].StrVal)
 
-    for i in 0..conf_length-1:
-        conf_limits.add((config_ast[1][1][i][0][1].intVal.int,config_ast[1][1][i][1][1].intVal.int))
+    #for i in 0..conf_length-1:
+    #    conf_limits.add((config_ast[1][1][i][0][1].intVal.int,config_ast[1][1][i][1][1].intVal.int))
 
     aliases_length = alias_config_ast[0][1].len
-    for i in 0..aliases_length-1:
-        var alias_comp: TComposition = @[]
-        for ii in 0..conf_length-1:
-            alias_comp.add(alias_config_ast[1][1][i][ii].intVal.int)
-        aliases_config.add((alias_config_ast[0][1][i].strVal, alias_comp))
+    #for i in 0..aliases_length-1:
+    #    var alias_comp: TComposition = @[]
+    #    for ii in 0..conf_length-1:
+    #        alias_comp.add(alias_config_ast[1][1][i][ii].intVal.int)
+    #    aliases_config.add((alias_config_ast[0][1][i].strVal, alias_comp))
 
-    # uname_config
-    uname_config = (uname_config_ast[0].strVal, uname_config_ast[1].strVal, uname_config_ast[2].strVal)
 
     ## List of all possible compositions
     # Init state, all exponent values to the minimum
     for i in 0..conf_length-1:
-        compo.add(conf_limits[i].expmin)
+        compo.add(config.limits[i].expmin)
     compos.add(compo)
     idx = conf_length-1
 
     # Following combinations
     block compos_loop:
         while true:
-            while compo[idx] == conf_limits[idx].expmax:
-                compo[idx] = conf_limits[idx].expmin
+            while compo[idx] == config.limits[idx].expmax:
+                compo[idx] = config.limits[idx].expmin
                 if idx == 0:
                     break compos_loop
                 else:
@@ -130,7 +128,7 @@ macro init_unit*(config_ast: TBasicUnitsConf, uname_config_ast: TUnameConfig, al
     
     ## List of names associated to composition
     for c in compos:
-        unames.add(get_uname(c, conf_names, uname_config))
+        unames.add(get_uname(c, config, uname_config))
     # Correct name for constants (only zeros in composition)
     idx = unames.find(uname_config.prefix)
     unames[idx] = uname_config.prefix & uname_config.nodim
@@ -153,7 +151,7 @@ macro init_unit*(config_ast: TBasicUnitsConf, uname_config_ast: TUnameConfig, al
         var ta:PNimrodNode = newNimNode(nnkTypeDef)
         ta.add(newNimNode(nnkPostfix).add(newIdentNode("*")).add(newIdentNode(uname_config.prefix & al.name)))
         ta.add(newEmptyNode()) # TODO why are paren needed ?
-        ta.add(newIdentNode(get_uname(al.compo, conf_names, uname_config)))
+        ta.add(newIdentNode(get_uname(al.compo, config, uname_config)))
         types.add(ta)
 
     ## Definition of the type class including all new types (not aliases)
