@@ -83,8 +83,8 @@ macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameCon
 
     conf_length = config.len
 
-    for i in 0..conf_length-1:
-        compo.add(config[i].limits.expmin)
+    for c in config:
+        compo.add(c.limits.expmin)
     compos.add(compo)
     idx = conf_length-1
 
