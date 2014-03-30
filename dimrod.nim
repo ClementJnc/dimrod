@@ -11,14 +11,18 @@ import macros
 type
     # Sequence containing a "composition", i.e. exponents of the basic units 
     TComposition = seq[int]
-    # Configuration of basic units TODO seq of tuples ...
-    TBasicUnitsConf* = tuple
-        names:seq[string]
-        limits:seq[TExpLimits]
+    # Definition of a basic unit
+    TBasicUnit* = tuple
+        names:string
+        limits:TExpLimits
+    # Configuration of basic units 
+    TBasicUnitsConf* = seq[TBasicUnit]
+    # Definition of an alias 
+    TAlias* = tuple
+        name:string # Full name
+        compo:TComposition # Dimensions    
     # Config for aliases 
-    TAliasConf* = tuple
-        name:seq[string] # Full name
-        compo:seq[TComposition] # Dimensions    
+    TAliasConf* = seq[TAlias]
     # Config of powers to handle
     TExpLimits = tuple
         expmin:int # Maximum negative exponent to define
