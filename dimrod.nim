@@ -13,7 +13,7 @@ type
     TComposition = seq[int]
     # Definition of a basic unit
     TBasicUnit* = tuple
-        names:string
+        name:string
         limits:TExpLimits
     # Configuration of basic units 
     TBasicUnitsConf* = seq[TBasicUnit]
@@ -71,7 +71,7 @@ proc `==` (a, b: TComposition) : bool =
     return true
 
 # Initialilisation of the librairy
-macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameConfig], alias_config:static[TAliasConf]) : stmt =   # TODO add default value for alias
+macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameConfig], aliases_config:static[TAliasConf]) : stmt =   # TODO add default value for alias
     type
         TAlias = tuple
             name: string
@@ -79,18 +79,18 @@ macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameCon
     var
        #conf_names:seq[string] = @[]
        #conf_limits:seq[TExpLimits] = @[]
-       #compos: seq[TComposition] = @[]
+       compos: seq[TComposition] = @[]
        unames: seq[string] = @[]
        compo: TComposition = @[]
        idx: int
-       #conf_length: int
+       conf_length: int
 
        #uname_config: TUnameConfig
        #aliases_config:seq[TAlias] = @[]
        #aliases_length:int
     result = newNimNode(nnkStmtList)
 
-    #conf_length = config_ast[0][1].len
+    conf_length = config.len
 
     #for i in 0..conf_length-1:
     #    conf_names.add(config_ast[0][1][i].StrVal)
@@ -98,7 +98,7 @@ macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameCon
     #for i in 0..conf_length-1:
     #    conf_limits.add((config_ast[1][1][i][0][1].intVal.int,config_ast[1][1][i][1][1].intVal.int))
 
-    aliases_length = alias_config_ast[0][1].len
+    #aliases_length = alias_config_ast[0][1].len
     #for i in 0..aliases_length-1:
     #    var alias_comp: TComposition = @[]
     #    for ii in 0..conf_length-1:
@@ -108,16 +108,17 @@ macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameCon
 
     ## List of all possible compositions
     # Init state, all exponent values to the minimum
+
     for i in 0..conf_length-1:
-        compo.add(config.limits[i].expmin)
+        compo.add(config[i].limits.expmin)
     compos.add(compo)
     idx = conf_length-1
 
     # Following combinations
     block compos_loop:
         while true:
-            while compo[idx] == config.limits[idx].expmax:
-                compo[idx] = config.limits[idx].expmin
+            while compo[idx] == config[idx].limits.expmax:
+                compo[idx] = config[idx].limits.expmin
                 if idx == 0:
                     break compos_loop
                 else:
