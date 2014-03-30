@@ -73,40 +73,17 @@ proc `==` (a, b: TComposition) : bool =
 # Initialilisation of the librairy
 macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameConfig], aliases_config:static[TAliasConf]) : stmt =   # TODO add default value for alias
     var
-       #conf_names:seq[string] = @[]
-       #conf_limits:seq[TExpLimits] = @[]
        compos: seq[TComposition] = @[]
        unames: seq[string] = @[]
        compo: TComposition = @[]
        idx: int
        conf_length: int
 
-       #uname_config: TUnameConfig
-       #aliases_config:seq[TAlias] = @[]
-       #aliases_length:int
     result = newNimNode(nnkStmtList)
 
     conf_length = config.len
 
-    #for i in 0..conf_length-1:
-    #    conf_names.add(config_ast[0][1][i].StrVal)
-
-    #for i in 0..conf_length-1:
-    #    conf_limits.add((config_ast[1][1][i][0][1].intVal.int,config_ast[1][1][i][1][1].intVal.int))
-
-    #aliases_length = alias_config_ast[0][1].len
-    #for i in 0..aliases_length-1:
-    #    var alias_comp: TComposition = @[]
-    #    for ii in 0..conf_length-1:
-    #        alias_comp.add(alias_config_ast[1][1][i][ii].intVal.int)
-    #    aliases_config.add((alias_config_ast[0][1][i].strVal, alias_comp))
-
-
-    ## List of all possible compositions
-    # Init state, all exponent values to the minimum
-
     for i in 0..conf_length-1:
-        echo i
         compo.add(config[i].limits.expmin)
     compos.add(compo)
     idx = conf_length-1
