@@ -97,7 +97,7 @@ macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameCon
                     break compos_loop
                 else:
                     idx = idx - 1
-            compo[idx] += 1
+            compo[idx] = compo[idx] + 1 # TODO temp, regression with +=
             idx = conf_length-1
             compos.add(compo)
     
