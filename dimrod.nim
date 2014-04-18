@@ -45,6 +45,7 @@ proc get_uname(compo: TComposition, config: TBasicUnitsConf, uname_config: TUnam
         n:int
         first_char: bool = true # used to prevent an underscore as first char if first unit is absent.
     result = uname_config.prefix
+
     n = -1
     for exp in compo:
         n += 1 
@@ -52,7 +53,7 @@ proc get_uname(compo: TComposition, config: TBasicUnitsConf, uname_config: TUnam
             continue
         if n > 0 and not first_char:
             result &= "_"
-        result &= config[n].name
+        result = result & config[n].name
         first_char = false
         # Add separator if exponent is negative
         # Nothing to display if exponent is 1
@@ -100,10 +101,12 @@ macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameCon
             compo[idx] = compo[idx] + 1 # TODO temp, regression with +=
             idx = conf_length-1
             compos.add(compo)
-    
+
     ## List of names associated to composition
+    echo "**", uname_config.prefix # TODO needed, don't know why. 
     for c in compos:
         unames.add(get_uname(c, config, uname_config))
+
     # Correct name for constants (only zeros in composition)
     idx = unames.find(uname_config.prefix)
     unames[idx] = uname_config.prefix & uname_config.nodim
