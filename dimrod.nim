@@ -9,6 +9,8 @@
 import macros
 import sequtils
 import strutils
+import tables
+import math
 
 type
     # Sequence containing a "composition", i.e. exponents of the basic units 
@@ -96,6 +98,7 @@ macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameCon
        compo: TComposition = @[]
        idx: int
        conf_length: int
+       fullnames: TTable[TComposition, string] 
 
     result = newNimNode(nnkStmtList)
 
@@ -119,15 +122,11 @@ macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameCon
             idx = conf_length-1
             compos.add(compo)
 
-    # TODO TEST !!!
-    for c in compos:
-        discard get_fullname(c, config)
-
     ## List of names associated to composition
     echo "**", uname_config.prefix # TODO needed, don't know why. 
     for c in compos:
         unames.add(get_uname(c, config, uname_config))
-
+    
     # Correct name for constants (only zeros in composition)
     idx = unames.find(uname_config.prefix)
     unames[idx] = uname_config.prefix & uname_config.nodim
@@ -317,6 +316,15 @@ macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameCon
             
         procComp.add(body)
         result.add(procComp)
+
+    # Full names
+    fullnames = initTable[TComposition, string](nextPowerOfTwo(len(compos)))
+    for c in compos:
+        fullnames.add(c, get_fullname(c, config))
+    for a in aliases_config:
+        fullnames.add(a.compo, a.name)
+
+
 
     # Display function ($)
     var procDisp = newNimNode(nnkProcDef)
