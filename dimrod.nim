@@ -81,14 +81,12 @@ proc get_fullname(compo: TComposition, config: TBasicUnitsConf) : string {.compi
         z = zip(compo, config)
         sep = ' '
     result = "" 
-    echo compo
     for n in z:
         if n.a != 0:
             result = result & sep & n.b.name
         sep = '.'
         if n.a > 1 or n.a < 0:
             result = result & '^' & intToStr(n.a)
-    echo result  
 
 # Initialilisation of the librairy
 macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameConfig], aliases_config:static[TAliasConf]) : stmt =   # TODO add default value for alias
@@ -98,7 +96,7 @@ macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameCon
        compo: TComposition = @[]
        idx: int
        conf_length: int
-       fullnames: TTable[TComposition, string] 
+       fullnames: TTable[TComposition, string]
 
     result = newNimNode(nnkStmtList)
 
@@ -325,32 +323,48 @@ macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameCon
     for c in compos:
         if not fullnames.hasKey(c):
             fullnames.add(c, get_fullname(c, config))
-    for f in pairs(fullnames):
-        echo f.key, f.val
-
 
     # Display functions ($)
-    var procDisp = newNimNode(nnkProcDef)
-    var name = newNimNode(nnkPostfix)
-    name.add(newIdentNode("*"))
-    name.add(newNimNode(nnkAccQuoted).add(newIdentNode("$")))
-    procDisp.add(name)
+    # TODO refactor to avoid the double call to get_uname()
+    for f in pairs(fullnames):
+        var
+            uname = get_uname(f.key, config, uname_config)
+            procDisp = newNimNode(nnkProcDef)
+            name = newNimNode(nnkPostfix)
 
-    procDisp.add(newEmptyNode())
-    procDisp.add(newEmptyNode())
-    var formalParams = newNimNode(nnkFormalParams)
-    formalParams.add(newIdentNode("string"))
-    formalParams.add(newIdentDefs(newIdentNode("a"), newIdentNode("TU")))
-    procDisp.add(formalParams)
-    procDisp.add(newEmptyNode())
-    procDisp.add(newEmptyNode())
-    var 
-        body = newNimNode(nnkStmtList)
-        assig_lhs = newIdentNode("result")
-        assig_rhs = newCall("formatFloat",
-                            newDotExpr(newIdentNode("a"), newIdentNode("float")),
-                            newIdentNode("ffDefault"),
-                            newIntLitNode(0))
-    body.add(newAssignment(assig_lhs, assig_rhs))
-    procDisp.add(body)
-    result.add(procDisp)
+        if uname == uname_config.prefix:
+            uname = uname_config.prefix & uname_config.nodim
+
+        name.add(newIdentNode("*")) # TODO refactor outside
+        name.add(newNimNode(nnkAccQuoted).add(newIdentNode("$")))
+        procDisp.add(name)
+
+        procDisp.add(newEmptyNode())
+        procDisp.add(newEmptyNode())
+        var formalParams = newNimNode(nnkFormalParams)
+        echo "*", treeRepr(formalParams)
+        formalParams.add(newIdentNode("string"))
+        echo "**", treeRepr(formalParams)
+        echo f.key, uname
+        echo treeRepr(formalParams)
+        formalParams.add(newIdentDefs(newIdentNode("a"), newIdentNode(uname)))
+        echo "#", treeRepr(formalParams)
+        procDisp.add(formalParams)
+        echo "@"
+        procDisp.add(newEmptyNode())
+        procDisp.add(newEmptyNode())
+        var 
+            body = newNimNode(nnkStmtList)
+            assig_lhs = newIdentNode("result")
+            assig_rhs = newCall("formatFloat",
+                                newDotExpr(newIdentNode("a"), newIdentNode("float")),
+                                newIdentNode("ffDefault"),
+                                newIntLitNode(0))
+        body.add(newAssignment(assig_lhs, assig_rhs))
+        body.add(newAssignment(newIdentNode("result"), newCall("add", newIdentNode("result"),newStrLitNode(f.val))))
+        #echo treeRepr(body)
+
+        procDisp.add(body)
+        #echo treeRepr(procDisp)
+        result.add(procDisp)
+    #echo treeRepr result
