@@ -319,14 +319,17 @@ macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameCon
 
     # Full names
     fullnames = initTable[TComposition, string](nextPowerOfTwo(len(compos)))
-    for c in compos:
-        fullnames.add(c, get_fullname(c, config))
     for a in aliases_config:
         fullnames.add(a.compo, a.name)
+        echo a.compo, a.name
+    for c in compos:
+        if not fullnames.hasKey(c):
+            fullnames.add(c, get_fullname(c, config))
+    for f in pairs(fullnames):
+        echo f.key, f.val
 
 
-
-    # Display function ($)
+    # Display functions ($)
     var procDisp = newNimNode(nnkProcDef)
     var name = newNimNode(nnkPostfix)
     name.add(newIdentNode("*"))
