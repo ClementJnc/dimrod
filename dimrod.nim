@@ -7,6 +7,8 @@
 # A type defined only one exponent is called a "basic unit"
 
 import macros
+import sequtils
+import strutils
 
 type
     # Sequence containing a "composition", i.e. exponents of the basic units 
@@ -71,6 +73,21 @@ proc `==` (a, b: TComposition) : bool =
             return false
     return true
 
+# Give full name (human) from a composition
+proc get_fullname(compo: TComposition, config: TBasicUnitsConf) : string {.compileTime.} =
+    var 
+        z = zip(compo, config)
+        sep = ' '
+    result = "" 
+    echo compo
+    for n in z:
+        if n.a != 0:
+            result = result & sep & n.b.name
+        sep = '.'
+        if n.a > 1 or n.a < 0:
+            result = result & '^' & intToStr(n.a)
+    echo result  
+
 # Initialilisation of the librairy
 macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameConfig], aliases_config:static[TAliasConf]) : stmt =   # TODO add default value for alias
     var
@@ -101,6 +118,10 @@ macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameCon
             compo[idx] = compo[idx] + 1 # TODO temp, regression with +=
             idx = conf_length-1
             compos.add(compo)
+
+    # TODO TEST !!!
+    for c in compos:
+        discard get_fullname(c, config)
 
     ## List of names associated to composition
     echo "**", uname_config.prefix # TODO needed, don't know why. 
