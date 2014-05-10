@@ -80,13 +80,17 @@ proc get_fullname(compo: TComposition, config: TBasicUnitsConf) : string {.compi
     var 
         z = zip(compo, config)
         sep = ' '
-    result = "" 
+        empty = true
+    result = ""
+
     for n in z:
         if n.a != 0:
             result = result & sep & n.b.name
+            empty = false
         sep = '.'
         if n.a > 1 or n.a < 0:
             result = result & '^' & intToStr(n.a)
+    if empty: result = " "# prevent from returning an empty string.
 
 # Initialilisation of the librairy
 macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameConfig], aliases_config:static[TAliasConf]) : stmt =   # TODO add default value for alias
@@ -121,7 +125,6 @@ macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameCon
             compos.add(compo)
 
     ## List of names associated to composition
-    echo "**", uname_config.prefix # TODO needed, don't know why. 
     for c in compos:
         unames.add(get_uname(c, config, uname_config))
     
@@ -319,7 +322,6 @@ macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameCon
     fullnames = initTable[TComposition, string](nextPowerOfTwo(len(compos)))
     for a in aliases_config:
         fullnames.add(a.compo, a.name)
-        echo a.compo, a.name
     for c in compos:
         if not fullnames.hasKey(c):
             fullnames.add(c, get_fullname(c, config))
@@ -342,29 +344,22 @@ macro init_unit*(config: static[TBasicUnitsConf], uname_config: static[TUnameCon
         procDisp.add(newEmptyNode())
         procDisp.add(newEmptyNode())
         var formalParams = newNimNode(nnkFormalParams)
-        echo "*", treeRepr(formalParams)
         formalParams.add(newIdentNode("string"))
-        echo "**", treeRepr(formalParams)
-        echo f.key, uname
-        echo treeRepr(formalParams)
         formalParams.add(newIdentDefs(newIdentNode("a"), newIdentNode(uname)))
-        echo "#", treeRepr(formalParams)
         procDisp.add(formalParams)
-        echo "@"
         procDisp.add(newEmptyNode())
         procDisp.add(newEmptyNode())
         var 
             body = newNimNode(nnkStmtList)
             assig_lhs = newIdentNode("result")
-            assig_rhs = newCall("formatFloat",
-                                newDotExpr(newIdentNode("a"), newIdentNode("float")),
-                                newIdentNode("ffDefault"),
-                                newIntLitNode(0))
+            assig_rhs: PNimrodNode
+        assig_rhs = newCall("&",
+                        newCall("formatFloat",
+                        newDotExpr(newIdentNode("a"), newIdentNode("float")),
+                        newIdentNode("ffDefault"),
+                        newIntLitNode(0)),
+                        newStrLitNode(f.val))
         body.add(newAssignment(assig_lhs, assig_rhs))
-        body.add(newAssignment(newIdentNode("result"), newCall("add", newIdentNode("result"),newStrLitNode(f.val))))
-        #echo treeRepr(body)
 
         procDisp.add(body)
-        #echo treeRepr(procDisp)
         result.add(procDisp)
-    #echo treeRepr result

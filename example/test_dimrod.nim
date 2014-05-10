@@ -10,11 +10,11 @@ var
     t = 1.Ts
     g : TN
 c = a / b
-echo c, " m/kg"
-echo a+d, " m"
-echo a-d, " m"
+echo c
+echo a+d
+echo a-d
 echo a/d
-echo a*e, " m"
-echo b * a / t / t, " N" # Newtons
+echo a*e
+echo b * a / t / t 
 
 echo "Min of ",a, " and ", d, " is ", min(a, d)
