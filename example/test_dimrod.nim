@@ -15,6 +15,9 @@ echo a+d
 echo a-d
 echo a/d
 echo a*e
-echo b * a / t / t 
+echo b * a / t / t
+g = 8.7.TN
+echo b * a / t / t + g
+
 
 echo "Min of ",a, " and ", d, " is ", min(a, d)
