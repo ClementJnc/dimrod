@@ -67,7 +67,7 @@ proc get_uname(compo: TComposition, config: TBasicUnitsConf, uname_config: TUnam
         elif exp>1:
             result &= $exp
 
-# Comparaiso function for composition
+# Comparaison function for composition
 proc `==` (a, b: TComposition) : bool =
     # Assuming size are equal for compo
     for i in 0..a.high:
